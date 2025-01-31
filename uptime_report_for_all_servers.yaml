@@ -1,0 +1,58 @@
+---
+- name: Get uptime of all servers and send email
+  hosts: all_servers
+  become: yes
+  gather_facts: yes
+
+  vars_files:
+    - vars/vault.yml
+
+  tasks:
+    - name: Get the uptime of the server
+      command: uptime -p
+      register: uptime_output
+
+    - name: Collect uptime information
+      set_fact:
+        uptime_results: "{{ uptime_results | default([]) + [{ 'host': inventory_hostname, 'uptime': uptime_output.stdout }] }}"
+      when: uptime_output is defined
+
+    - name: Save uptime results to a file
+      delegate_to: localhost
+      become: no
+      run_once: true
+      local_action:
+        module: copy
+        content: |
+          Uptime Report - {{ ansible_date_time.date }}
+          {% for result in uptime_results %}
+          {{ result.host }}: {{ result.uptime }}
+          {% endfor %}
+        dest: /tmp/uptime_report.txt
+
+    - name: Send the uptime report via email
+      delegate_to: localhost
+      become: no
+      run_once: true
+      local_action:
+        module: mail
+        host: smtp.gmail.com  # Replace with your SMTP server
+        port: 587
+        username: "{{ smtp_user }}"
+        password: "{{ smtp_pass }}"
+        from: no-reply@example.com
+        to: anil.mitkari@billmart.com  # Replace with recipient email
+        subject: Uptime Report - {{ ansible_date_time.date }}
+        body: |
+          Hi,
+
+          Please find the uptime report for all servers below:
+
+          {% for result in uptime_results %}
+          {{ result.host }}: {{ result.uptime }}
+          {% endfor %}
+
+          Best regards,
+          Your Automation System
+        attach: /tmp/uptime_report.txt
+

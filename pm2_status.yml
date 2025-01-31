@@ -1,0 +1,13 @@
+---
+- name: Check PM2 status
+  hosts: slave01_dev
+  become: yes  # Run as root user
+  tasks:
+    - name: Check PM2 status
+      shell: "/root/.nvm/versions/node/v18.13.0/bin/pm2 ps"
+      register: pm2_status
+      ignore_errors: yes  # Ignore errors if PM2 is not installed or running
+
+    - name: Display PM2 status
+      debug:
+        var: pm2_status.stdout

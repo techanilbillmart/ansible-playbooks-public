@@ -1,12 +1,12 @@
 ---
 - name: Run disk_usage.sh script on remote host
-  hosts: development
+  hosts: all
   become: true
 
   tasks:
     - name: Copy disk_usage.sh to remote host
       copy:
-        src: /home/ubuntu/shell/disk_usage.sh
+        src: /home/anil/shell/disk_usage.sh
         dest: /tmp/disk_usage.sh
 
     - name: Make disk_usage.sh executable
@@ -21,3 +21,4 @@
     - name: Display script output
       debug:
         var: disk_usage_output.stdout_lines
+

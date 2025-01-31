@@ -1,0 +1,24 @@
+---
+- name: Get CPU utilization
+  hosts: development
+  become: true
+
+  tasks:
+    - name: Copy cpu_utilization.sh to remote host
+      copy:
+        src: /home/anil/shell/cpu_utilization.sh  # Update with the actual path to the script on your local machine
+        dest: /tmp/cpu_utilization.sh    # Specify the destination path on the remote host
+
+    - name: Make cpu_utilization.sh executable
+      file:
+        path: /tmp/cpu_utilization.sh
+        mode: 'u+x'
+
+    - name: Execute cpu_utilization.sh script and capture output
+      command: /tmp/cpu_utilization.sh
+      register: cpu_utilization_output
+
+    - name: Display CPU utilization
+      debug:
+        var: cpu_utilization_output.stdout_lines
+
